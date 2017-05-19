@@ -61,15 +61,17 @@ class Perceptron(Classifier):
             # Calculate g(x) for every number
 
             g_x = self.fire(self.trainingSet.input)
+            classifications = g_x > 0
 
             x = self.trainingSet.input
-            # set labeled data to negative
+            # # set labeled data to negative
             x[self.trainingSet.label] = -x[self.trainingSet.label]
 
             # Calculate and set new weight
-            wrong_labeled_pos = x < 0
+            # wrong_labeled_pos = x < 0
+            wrong_labeled_pos = classifications != self.trainingSet.label
             wrong_labeled = x[wrong_labeled_pos]
-            self.weight += (self.learningRate * np.sum(wrong_labeled, axis=0))
+            self.weight -= (self.learningRate * np.sum(wrong_labeled, axis=0))
 
             print(i, 'wrong labeled', np.sum(wrong_labeled_pos))
 
@@ -85,7 +87,7 @@ class Perceptron(Classifier):
         bool :
             True if the testInstance is recognized as a 7, False otherwise.
         """
-        return self.fire(testInstance)
+        return self.fire(testInstance) > 0
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
