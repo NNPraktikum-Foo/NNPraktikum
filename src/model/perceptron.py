@@ -59,15 +59,16 @@ class Perceptron(Classifier):
         
         for i in range(self.epochs):
             # Calculate g(x) for every number
-            #g_x = np.dot(self.weight, self.trainingSet.input.T)
+
             g_x = self.fire(self.trainingSet.input)
 
-            # check for wrong labels
-            wrong_labeled_pos = g_x != self.trainingSet.label
-
+            x = self.trainingSet.input
+            # set labeled data to negative
+            x[self.trainingSet.label] = -x[self.trainingSet.label]
 
             # Calculate and set new weight
-            wrong_labeled = self.trainingSet.input[wrong_labeled_pos, :]
+            wrong_labeled_pos = x < 0
+            wrong_labeled = x[wrong_labeled_pos]
             self.weight += (self.learningRate * np.sum(wrong_labeled, axis=0))
 
             print(i, 'wrong labeled', np.sum(wrong_labeled_pos))

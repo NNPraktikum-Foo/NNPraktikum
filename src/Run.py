@@ -44,7 +44,7 @@ def main():
     # evaluator.printAccuracy(data.testSet, stupidPred)
 
     print("\nResult of the Perceptron recognizer:")
-    evaluator.printComparison(data.testSet, perceptronPred)
+    #evaluator.printComparison(data.testSet, perceptronPred)
     evaluator.printAccuracy(data.testSet, perceptronPred)
     
 
