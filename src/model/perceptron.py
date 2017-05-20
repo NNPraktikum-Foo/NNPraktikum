@@ -64,14 +64,15 @@ class Perceptron(Classifier):
             classifications = g_x > 0
 
             x = self.trainingSet.input
-            # # set labeled data to negative
-            x[self.trainingSet.label] = -x[self.trainingSet.label]
+
+            position_neg_examples = np.invert(np.array(self.trainingSet.label, dtype=bool))
+            x[position_neg_examples] = -x[position_neg_examples]
 
             # Calculate and set new weight
-            # wrong_labeled_pos = x < 0
             wrong_labeled_pos = classifications != self.trainingSet.label
             wrong_labeled = x[wrong_labeled_pos]
-            self.weight -= (self.learningRate * np.sum(wrong_labeled, axis=0))
+            self.weight += (self.learningRate * np.sum(wrong_labeled, axis=0))/len(classifications)
+            #self.weight /= np.linalg.norm(self.weight)
 
             print(i, 'wrong labeled', np.sum(wrong_labeled_pos))
 
@@ -114,4 +115,4 @@ class Perceptron(Classifier):
          
     def fire(self, input):
         """Fire the output of the perceptron corresponding to the input """
-        return Activation.sign(np.dot(np.array(input), self.weight))
+        return Activation.sign(np.dot(np.array(input), self.weight), .5)
