@@ -71,9 +71,9 @@ class Perceptron(Classifier):
             # wrong_labeled_pos = x < 0
             wrong_labeled_pos = classifications != self.trainingSet.label
             wrong_labeled = x[wrong_labeled_pos]
-            numClassifications = len(classifications)
-
+            
             self.weight += (self.learningRate * np.sum(wrong_labeled, axis=0)/numClassifications)
+            self.weight /= np.linalg.norm(self.weight)
             #print(i, 'wrong labeled', np.sum(wrong_labeled_pos))
 
     def classify(self, testInstance):
