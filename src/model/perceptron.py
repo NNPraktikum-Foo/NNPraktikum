@@ -5,6 +5,8 @@ import logging
 
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 from util.activation_functions import Activation
 from model.classifier import Classifier
 
@@ -34,8 +36,8 @@ class Perceptron(Classifier):
     testSet : list
     weight : list
     """
-    def __init__(self, train, valid, test, 
-                                    learningRate=0.01, epochs=50):
+    def __init__(self, train, valid, test,
+                 learningRate=0.01, epochs=50):
 
         self.learningRate = learningRate
         self.epochs = epochs
@@ -46,7 +48,10 @@ class Perceptron(Classifier):
 
         # Initialize the weight vector with small random values
         # around 0 and0.1
-        self.weight = np.random.rand(self.trainingSet.input.shape[1])/100
+        # 784 weights = 28^2
+        #self.weight = np.random.rand(self.trainingSet.input.shape[1])/100
+        self.weight = np.zeros(self.trainingSet.input.shape[1])
+        #print("TrainingSer input shape " + str(self.trainingSet.input.shape[1]))
 
     def train(self, verbose=True):
         """Train the perceptron with the perceptron learning algorithm.
@@ -56,9 +61,41 @@ class Perceptron(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
-        
+
         # Write your code to train the perceptron here
-        pass
+
+        #self.tryOne()
+
+        h1, = plt.plot(np.zeros(3000))
+
+        for i in range(self.epochs):
+            print("Epoche " + str(i))
+            x = self.trainingSet.input
+            gx = self.fire(x)
+            found = gx > 0
+            ground_truth = np.array(self.trainingSet.label, dtype=bool)
+
+            x[np.invert(ground_truth)] *= -1
+
+            is_error = found != ground_truth
+
+            #for e in range(len(is_error)):
+            #    if is_error[e]:
+            #        self.weight += self.learningRate * x[e]
+
+
+            J = np.sum(x[is_error], axis=0)
+
+            self.weight += J * self.learningRate / (len(is_error) +1)
+
+            h1.set_ydata(gx)
+            plt.draw()
+            plt.pause(0.001)
+
+
+
+
+
 
     def classify(self, testInstance):
         """Classify a single instance.
@@ -73,7 +110,7 @@ class Perceptron(Classifier):
             True if the testInstance is recognized as a 7, False otherwise.
         """
         # Write your code to do the classification on an input image
-        pass
+        return self.fire(testInstance) > 0
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
@@ -97,7 +134,46 @@ class Perceptron(Classifier):
     def updateWeights(self, input, error):
         # Write your code to update the weights of the perceptron here
         pass
-         
+
     def fire(self, input):
         """Fire the output of the perceptron corresponding to the input """
         return Activation.sign(np.dot(np.array(input), self.weight))
+
+
+    def tryOne(self):
+
+        x = self.trainingSet.input
+
+        accuracy = []
+
+        for i in range(self.epochs):
+            print("Epoche " + str(i))
+
+            # Classification
+            gx = self.fire(x)
+            found = gx > 0
+
+            groundt = np.array(self.trainingSet.label, dtype=bool)
+            ngroundt = np.invert(groundt)
+
+            # check result against label
+            errors = found != groundt
+
+            # change sign for second decision class
+            x[ngroundt] *= -1
+
+            # sum errors
+            # J = np.sum(x[errors], axis=0)
+            J = np.zeros(self.weight.shape)
+            for e in x[errors]:
+                J += e
+
+            accuracy.append(np.sum(J) / (1 + len(x[errors])) * self.learningRate)
+
+            if len(x[errors]):
+                self.weight += self.learningRate * J / len(x[errors])
+
+        print(accuracy)
+        plt.plot(accuracy)
+        plt.ylabel("Error")
+        plt.show()
