@@ -64,7 +64,7 @@ class Perceptron(Classifier):
             classifications = g_x > 0
             x = self.trainingSet.input
             # set negative examples to negative values
-            positionNegExamples = [j for j, jLabel in enumerate(self.trainingSet.label) if jLabel == 0]
+            positionNegExamples = np.invert(np.array(self.trainingSet.label, dtype=bool))
             x[positionNegExamples] *= -1
 
             # Calculate and set new weight
