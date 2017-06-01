@@ -35,7 +35,7 @@ class LogisticRegression(Classifier):
     epochs : positive int
     """
 
-    def __init__(self, train, valid, test, learningRate=0.01, epochs=50):
+    def __init__(self, train, valid, test, learningRate=0.01, epochs=50, simpleLearningRateDecay=False):
 
         self.learningRate = learningRate
         self.epochs = epochs
@@ -43,6 +43,7 @@ class LogisticRegression(Classifier):
         self.trainingSet = train
         self.validationSet = valid
         self.testSet = test
+        self.simpleLearningRateDecay = simpleLearningRateDecay
 
         # Initialize the weight vector with small values
         self.weight = 0.01*np.random.randn(self.trainingSet.input.shape[1])
@@ -56,13 +57,13 @@ class LogisticRegression(Classifier):
             Print logging messages with validation accuracy if verbose is True.
         """
         for i in range(self.epochs):
-            errors = self.trainBatch()
+            errors = self.trainBatch(i)
 
             if verbose:
                 logging.info("Epoch: %i; Error: %i", i, errors)
         pass
 
-    def trainBatch(self, verbose=True):
+    def trainBatch(self, epoch, verbose=True):
         grad = np.empty(self.trainingSet.input.shape[1])
         errors = 0
         for i in range(self.trainingSet.input.shape[0]):
@@ -71,7 +72,12 @@ class LogisticRegression(Classifier):
             er = self.trainingSet.label[i] - o
             errors = errors + np.abs(self.trainingSet.label[i] - Activation.sign(o, 0.5))
             grad = np.add(grad, np.multiply(er, x))
-        self.weight = np.add(self.weight, np.multiply(self.learningRate, grad))
+
+        actualLearningRate = self.learningRate
+        if (self.simpleLearningRateDecay):
+            #a super simple linear learning rate decay: learn*(1-(epoch/#epochs))
+            actualLearningRate = np.multiply(self.learningRate,1.0 - np.divide(epoch, self.epochs))
+        self.weight = np.add(self.weight, np.multiply(actualLearningRate, grad))
         return errors
         
     def classify(self, testInstance):
