@@ -66,8 +66,7 @@ class Perceptron(Classifier):
         # Train for some epochs if the error is not 0
         while not learned:
             totalError = 0
-            for input, label in zip(self.trainingSet.input,
-                                    self.trainingSet.label):
+            for input, label in zip(self.trainingSet.input, self.trainingSet.label):
                 output = self.fire(input)
                 if output != label:
                     error = loss.calculateError(label, output)

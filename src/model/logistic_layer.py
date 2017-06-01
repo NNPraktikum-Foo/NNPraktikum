@@ -40,8 +40,7 @@ class LogisticLayer(Layer):
         shape of the layer, is also shape of the weight matrix
     """
 
-    def __init__(self, nIn, nOut, weights=None,
-                 activation='softmax', isClassifierLayer=True):
+    def __init__(self, nIn, nOut, weights=None, activation='softmax', isClassifierLayer=True):
 
         # Get activation function from string
         # Notice the functional programming paradigms of Python + Numpy
