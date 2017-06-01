@@ -9,7 +9,9 @@ We use Python 2.7, not Python 3.x
 
 ## Requirements
 
-You have to install two 3rd-party packages: Numpy and scikit-learn.
+Install all requirements with:
+
+```pip install -r requirements.txt```
 
 ### Numpy
 
