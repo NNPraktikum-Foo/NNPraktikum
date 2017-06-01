@@ -64,6 +64,7 @@ class LogisticRegression(Classifier):
         while not learned:
             totalError = 0
             for input, label in zip(self.trainingSet.input, self.trainingSet.label):
+                # Predict output of input
                 output = self.fire(input)
                 error = label - output
 
@@ -71,16 +72,18 @@ class LogisticRegression(Classifier):
                 if error >= 0.5:
                     totalError += 1
 
+                # Calculate new gradient
                 grad = np.add(grad, np.multiply(error, input))
 
-            self.weight = np.add(self.weight, np.multiply(self.learningRate, grad))
+            # Update weights with new gradient
+            self.weight = np.add(self.weight, np.multiply(self.decayLearningRate(iteration), grad))
             iteration += 1
 
             if verbose:
-                logging.info("Epoch: %i; Error: %i", iteration, totalError)
+                logging.info("Epoch: %i; Falsely classified: %i", iteration, totalError)
 
             if iteration >= self.epochs:
-                # stop criteria is reached
+                # Stop criteria is reached
                 learned = True
         
     def classify(self, testInstance):
@@ -115,6 +118,14 @@ class LogisticRegression(Classifier):
         # Once you can classify an instance, just use map for all of the test
         # set.
         return list(map(self.classify, test))
+
+    def decayLearningRate(self, epoch):
+        """ Implement a decaying learning rate. Perform decay at every epoch.
+
+        :param epoch: The current epoch or iteration of the training
+        :return: The current learning rate
+        """
+        return self.learningRate * np.exp(-1.0 * np.multiply(0.001, epoch))
 
     def updateWeights(self, grad):
         pass
