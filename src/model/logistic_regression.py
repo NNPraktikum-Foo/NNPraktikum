@@ -55,8 +55,24 @@ class LogisticRegression(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
+        for i in range(self.epochs):
+            errors = self.trainBatch()
 
+            if verbose:
+                logging.info("Epoch: %i; Error: %i", i, errors)
         pass
+
+    def trainBatch(self, verbose=True):
+        grad = np.empty(self.trainingSet.input.shape[1])
+        errors = 0
+        for i in range(self.trainingSet.input.shape[0]):
+            x = self.trainingSet.input[i,]
+            o = self.fire(x)
+            er = self.trainingSet.label[i] - o
+            errors = errors + np.abs(self.trainingSet.label[i] - Activation.sign(o, 0.5))
+            grad = np.add(grad, np.multiply(er, x))
+        self.weight = np.add(self.weight, np.multiply(self.learningRate, grad))
+        return errors
         
     def classify(self, testInstance):
         """Classify a single instance.
@@ -70,7 +86,7 @@ class LogisticRegression(Classifier):
         bool :
             True if the testInstance is recognized as a 7, False otherwise.
         """
-        pass
+        return Activation.sign(self.fire(testInstance), 0.5)
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
