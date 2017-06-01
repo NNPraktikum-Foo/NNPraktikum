@@ -58,9 +58,10 @@ class LogisticRegression(Classifier):
         """
         for i in range(self.epochs):
             errors = self.trainBatch(i)
+            percentage = 1.0 - np.divide(1.0*errors,self.trainingSet.input.shape[0])
 
             if verbose:
-                logging.info("Epoch: %i; Error: %i", i, errors)
+                logging.info("Epoch: %i; Errors: %i Percentage correct: %.3f", i, errors, percentage)
         pass
 
     def trainBatch(self, epoch, verbose=True):
