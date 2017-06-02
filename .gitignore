@@ -87,3 +87,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+.idea/misc.xml
+*.xml
+.idea/NNPraktikum.iml
