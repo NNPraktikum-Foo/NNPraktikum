@@ -24,7 +24,7 @@ def main():
         data.validationSet,
         data.testSet,
         learningRate=0.05,
-        epochs=30)
+        epochs=50)
 
     # Train the classifiers
     print("=========================")
@@ -38,7 +38,7 @@ def main():
     myPerceptronClassifier.train()
     print("Done..")
 
-    print("\nLogistifc Classifier has been training (english?)...")
+    print("\nLogistitc Classifier has been training..")
     myLogisticClassifier.train()
     print("Done")
 

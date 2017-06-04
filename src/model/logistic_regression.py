@@ -57,16 +57,22 @@ class LogisticRegression(Classifier):
             Print logging messages with validation accuracy if verbose is True.
         """
         for i in range(self.epochs):
-            self.batchTraining(i)
+            error = self.batchTraining(i)
+            if verbose:
+                logging.info("Epoche: %i, relative re-substitution error: %f)",
+                             i, error)
 
     def batchTraining(self, epoch):
-
+        epochError = 0
         gradient = np.empty(self.trainingSet.input.shape[1])
         for i in range(self.trainingSet.input.shape[0]):
             prediction = self.fire(self.trainingSet.input[i])
             localError = self.trainingSet.label[i] - prediction
             gradient = np.add(gradient, localError * self.trainingSet.input[i])
+            epochError += abs(self.trainingSet.label[i] - Activation.sign(
+                prediction, 0.5))
         self.updateWeights(gradient)
+        return (float(epochError) / self.trainingSet.input.shape[0])
 
     def classify(self, testInstance):
         """Classify a single instance.
