@@ -8,9 +8,10 @@ import numpy as np
 from util.activation_functions import Activation
 from model.classifier import Classifier
 
-logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
-                    level=logging.DEBUG,
-                    stream=sys.stdout)
+logging.basicConfig(
+    format='%(asctime)s %(levelname)s %(message)s',
+    level=logging.DEBUG,
+    stream=sys.stdout)
 
 
 class LogisticRegression(Classifier):
@@ -45,7 +46,7 @@ class LogisticRegression(Classifier):
         self.testSet = test
 
         # Initialize the weight vector with small values
-        self.weight = 0.01*np.random.randn(self.trainingSet.input.shape[1])
+        self.weight = 0.01 * np.random.randn(self.trainingSet.input.shape[1])
 
     def train(self, verbose=True):
         """Train the Logistic Regression.
@@ -55,9 +56,18 @@ class LogisticRegression(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
+        for i in range(self.epochs):
+            self.batchTraining(i)
 
-        pass
-        
+    def batchTraining(self, epoch):
+
+        gradient = np.empty(self.trainingSet.input.shape[1])
+        for i in range(self.trainingSet.input.shape[0]):
+            prediction = self.fire(self.trainingSet.input[i])
+            localError = self.trainingSet.label[i] - prediction
+            gradient = np.add(gradient, localError * self.trainingSet.input[i])
+        self.updateWeights(gradient)
+
     def classify(self, testInstance):
         """Classify a single instance.
 
@@ -70,7 +80,7 @@ class LogisticRegression(Classifier):
         bool :
             True if the testInstance is recognized as a 7, False otherwise.
         """
-        pass
+        return Activation.sign(self.fire(testInstance), 0.5)
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
@@ -92,9 +102,10 @@ class LogisticRegression(Classifier):
         return list(map(self.classify, test))
 
     def updateWeights(self, grad):
-        pass
+        self.weight = np.add(self.weight, self.learningRate * grad)
 
     def fire(self, input):
         # Look at how we change the activation function here!!!!
+        # Moar exclamation marks !!!!!!
         # Not Activation.sign as in the perceptron, but sigmoid
         return Activation.sigmoid(np.dot(np.array(input), self.weight))

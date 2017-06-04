@@ -10,14 +10,21 @@ from report.evaluator import Evaluator
 
 def main():
     data = MNISTSeven("../data/mnist_seven.csv", 3000, 1000, 1000)
-    myStupidClassifier = StupidRecognizer(data.trainingSet,
-                                          data.validationSet,
+    myStupidClassifier = StupidRecognizer(data.trainingSet, data.validationSet,
                                           data.testSet)
-    myPerceptronClassifier = Perceptron(data.trainingSet,
-                                        data.validationSet,
-                                        data.testSet,
-                                        learningRate=0.005,
-                                        epochs=30)
+    myPerceptronClassifier = Perceptron(
+        data.trainingSet,
+        data.validationSet,
+        data.testSet,
+        learningRate=0.005,
+        epochs=30)
+
+    myLogisticClassifier = LogisticRegression(
+        data.trainingSet,
+        data.validationSet,
+        data.testSet,
+        learningRate=0.05,
+        epochs=30)
 
     # Train the classifiers
     print("=========================")
@@ -31,11 +38,15 @@ def main():
     myPerceptronClassifier.train()
     print("Done..")
 
-    
+    print("\nLogistifc Classifier has been training (english?)...")
+    myLogisticClassifier.train()
+    print("Done")
+
     # Do the recognizer
     # Explicitly specify the test set to be evaluated
     stupidPred = myStupidClassifier.evaluate()
     perceptronPred = myPerceptronClassifier.evaluate()
+    logisticPred = myLogisticClassifier.evaluate()
 
     # Report the result
     print("=========================")
@@ -48,7 +59,10 @@ def main():
     print("\nResult of the Perceptron recognizer:")
     # evaluator.printComparison(data.testSet, perceptronPred)
     evaluator.printAccuracy(data.testSet, perceptronPred)
-    
-    
+
+    print("\nResult of logistic recognizer:")
+    evaluator.printAccuracy(data.testSet, logisticPred)
+
+
 if __name__ == '__main__':
     main()
