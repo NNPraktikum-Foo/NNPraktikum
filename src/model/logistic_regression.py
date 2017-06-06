@@ -55,8 +55,21 @@ class LogisticRegression(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
+        #grad = np.zeros(self.weight.shape)
+        x = self.trainingSet.input
 
-        pass
+
+        t = np.array(self.trainingSet.label)
+        t[t == 0] = -1
+
+        for i in range(self.epochs):
+            o_x = self.fire(x)
+            error = t - o_x
+            grad = np.dot(error, x)
+            grad /= grad.sum()
+            self.updateWeights(grad)
+            print('round', i+1, 'error', np.sum(error), 'weight', np.sum(self.weight))
+
         
     def classify(self, testInstance):
         """Classify a single instance.
@@ -70,7 +83,7 @@ class LogisticRegression(Classifier):
         bool :
             True if the testInstance is recognized as a 7, False otherwise.
         """
-        pass
+        return Activation.sign(self.fire(testInstance), 0.5)
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
@@ -92,7 +105,7 @@ class LogisticRegression(Classifier):
         return list(map(self.classify, test))
 
     def updateWeights(self, grad):
-        pass
+        self.weight += self.learningRate * grad
 
     def fire(self, input):
         # Look at how we change the activation function here!!!!
