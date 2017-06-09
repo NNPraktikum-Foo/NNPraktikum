@@ -4,6 +4,7 @@ import sys
 import logging
 
 import numpy as np
+import time
 
 from util.activation_functions import Activation
 from model.classifier import Classifier
@@ -57,31 +58,43 @@ class LogisticRegression(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
-        #grad = np.zeros(self.weight.shape)
         x = self.trainingSet.input
 
         t = np.array(self.trainingSet.label)
-        #t[t == 0] = -1
 
         plt.ion()
-        #for i in range(20):
-        #    fig = random.choice(x[t == 1])
-        #    plt.imshow(fig.reshape((28,28)))
-        #    plt.pause(0.5)
+
+        current_ms = lambda: int(round(time.time()*1000))
 
         for i in range(self.epochs):
+            time_start = current_ms()
+
             o_x = self.fire(x)
             error = t - o_x
             grad = np.dot(error, x)
             self.updateWeights(grad)
-            #print('round', i+1, 'error', np.sum(error), 'weight', np.sum(self.weight))
+
+            time_end = current_ms()
+
+            predict = [pre > 0.5 for pre in o_x]
+            true = [truth == 1 for truth in t]
+            right = 0.0
+
+            for j in range(len(true)):
+                if predict[j] is true[j]:
+                    right += 1
+
+            accuracy = right/len(true)
+
 
             if i % 7 == 0:
                 plt.imshow(self.weight.reshape((28, 28)))
                 plt.draw()
                 plt.pause(0.05)
 
-            print(i)
+            time_ges = current_ms()
+
+            print("epoche: {} \t accuracy: {:3.2f}%  \t eTime: {}ms \t eTime total: {}ms".format(i, accuracy*100, time_end-time_start, time_ges-time_start))
 
         plt.pause(1)
         
