@@ -66,6 +66,14 @@ class LogisticRegression(Classifier):
 
         current_ms = lambda: int(round(time.time()*1000))
 
+        accuracy = []
+
+        f, (ax1, ax2) = plt.subplots(1, 2)
+        ax1.set_title('Weights')
+        ax2.set_title('Error')
+        ax2.set_xlim([0, self.epochs])
+        ax2.set_ylim([0, 1])
+
         for i in range(self.epochs):
             time_start = current_ms()
 
@@ -84,17 +92,17 @@ class LogisticRegression(Classifier):
                 if predict[j] is true[j]:
                     right += 1
 
-            accuracy = right/len(true)
+            accuracy.append(right/len(true))
 
+            ax2.plot( [1 - acc for acc in accuracy], 'bo')
 
             if i % 7 == 0:
-                plt.imshow(self.weight.reshape((28, 28)))
-                plt.draw()
+                ax1.imshow(self.weight.reshape((28, 28)))
                 plt.pause(0.05)
 
             time_ges = current_ms()
 
-            print("epoche: {} \t accuracy: {:3.2f}%  \t eTime: {}ms \t eTime total: {}ms".format(i, accuracy*100, time_end-time_start, time_ges-time_start))
+            print("epoche: {} \t accuracy: {:3.2f}%  \t eTime: {}ms \t eTime total: {}ms".format(i, accuracy[i]*100, time_end-time_start, time_ges-time_start))
 
         plt.pause(1)
         
