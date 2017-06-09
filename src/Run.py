@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin python3
+
 
 from data.mnist_seven import MNISTSeven
 from model.stupid_recognizer import StupidRecognizer
@@ -22,7 +22,7 @@ def main():
                                         data.validationSet,
                                         data.testSet,
                                         learningRate=0.005,
-                                        epochs=600)
+                                        epochs=30)
     # Train the classifiers
     print("=========================")
     print("Training..")

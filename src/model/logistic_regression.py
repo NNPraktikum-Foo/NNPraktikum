@@ -7,6 +7,8 @@ import numpy as np
 
 from util.activation_functions import Activation
 from model.classifier import Classifier
+import matplotlib.pyplot as plt
+import random
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     level=logging.DEBUG,
@@ -58,18 +60,30 @@ class LogisticRegression(Classifier):
         #grad = np.zeros(self.weight.shape)
         x = self.trainingSet.input
 
-
         t = np.array(self.trainingSet.label)
-        t[t == 0] = -1
+        #t[t == 0] = -1
+
+        plt.ion()
+        #for i in range(20):
+        #    fig = random.choice(x[t == 1])
+        #    plt.imshow(fig.reshape((28,28)))
+        #    plt.pause(0.5)
 
         for i in range(self.epochs):
             o_x = self.fire(x)
             error = t - o_x
             grad = np.dot(error, x)
-            grad /= grad.sum()
             self.updateWeights(grad)
-            print('round', i+1, 'error', np.sum(error), 'weight', np.sum(self.weight))
+            #print('round', i+1, 'error', np.sum(error), 'weight', np.sum(self.weight))
 
+            if i % 7 == 0:
+                plt.imshow(self.weight.reshape((28, 28)))
+                plt.draw()
+                plt.pause(0.05)
+
+            print(i)
+
+        plt.pause(1)
         
     def classify(self, testInstance):
         """Classify a single instance.
