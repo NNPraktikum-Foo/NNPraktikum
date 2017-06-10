@@ -46,7 +46,7 @@ class LogisticRegression(Classifier):
         self.testSet = test
 
         # Initialize the weight vector with small values
-        self.weight = 0.01*np.random.randn(self.trainingSet.input.shape[1])
+        self.weight = 0.01*np.random.randn(self.trainingSet.input.shape[1]+1)
 
     def train(self, verbose=True):
         """Train the Logistic Regression.
@@ -57,6 +57,7 @@ class LogisticRegression(Classifier):
             Print logging messages with validation accuracy if verbose is True.
         """
         x = self.trainingSet.input
+        x = np.insert(x, 0, 1, axis=1)
 
         t = np.array(self.trainingSet.label)
 
@@ -85,6 +86,7 @@ class LogisticRegression(Classifier):
         bool :
             True if the testInstance is recognized as a 7, False otherwise.
         """
+        testInstance = np.insert(testInstance, 0, 1)
         return Activation.sign(self.fire(testInstance), 0.5)
 
     def evaluate(self, test=None):
