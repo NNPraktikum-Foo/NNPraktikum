@@ -45,7 +45,8 @@ class DifferentError(Error):
     def errorString(self):
         self.errorString = 'different'
 
-    def calculateError(self, target, output):
+    @staticmethod
+    def calculateError(target, output):
         # It is the numbers of differences between target and output
         return target - output
 

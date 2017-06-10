@@ -6,6 +6,7 @@ import logging
 import numpy as np
 
 from util.activation_functions import Activation
+from util.loss_functions import DifferentError
 from model.classifier import Classifier
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
@@ -55,20 +56,21 @@ class LogisticRegression(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
-        #grad = np.zeros(self.weight.shape)
         x = self.trainingSet.input
 
-
         t = np.array(self.trainingSet.label)
-        t[t == 0] = -1
 
         for i in range(self.epochs):
             o_x = self.fire(x)
-            error = t - o_x
+            error = DifferentError.calculateError(t, o_x)
+
+            if np.power(error, 2).sum()/error.shape[0] < .001:
+                break
+
             grad = np.dot(error, x)
-            grad /= grad.sum()
             self.updateWeights(grad)
-            print('round', i+1, 'error', np.sum(error), 'weight', np.sum(self.weight))
+
+            print('round', i+1, 'error', np.power(error, 2).sum()/error.shape[0])
 
         
     def classify(self, testInstance):
