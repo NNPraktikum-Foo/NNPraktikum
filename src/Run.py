@@ -13,7 +13,7 @@ def main():
     myStupidClassifier = StupidRecognizer(data.trainingSet,
                                           data.validationSet,
                                           data.testSet)
-    myPerceptronClassifier = Perceptron(data.trainingSet,
+    myLogisticRegression = LogisticRegression(data.trainingSet,
                                         data.validationSet,
                                         data.testSet,
                                         learningRate=0.005,
@@ -27,15 +27,15 @@ def main():
     myStupidClassifier.train()
     print("Done..")
 
-    print("\nPerceptron has been training..")
-    myPerceptronClassifier.train()
+    print("\nRegression has been training..")
+    myLogisticRegression.train()
     print("Done..")
 
     
     # Do the recognizer
     # Explicitly specify the test set to be evaluated
     stupidPred = myStupidClassifier.evaluate()
-    perceptronPred = myPerceptronClassifier.evaluate()
+    logisticPred = myLogisticRegression.evaluate()
 
     # Report the result
     print("=========================")
@@ -45,9 +45,9 @@ def main():
     # evaluator.printComparison(data.testSet, stupidPred)
     evaluator.printAccuracy(data.testSet, stupidPred)
 
-    print("\nResult of the Perceptron recognizer:")
-    # evaluator.printComparison(data.testSet, perceptronPred)
-    evaluator.printAccuracy(data.testSet, perceptronPred)
+    print("\nResult of the logistic recognizer:")
+    # evaluator.printComparison(data.testSet, logisticPred)
+    evaluator.printAccuracy(data.testSet, logisticPred)
     
     
 if __name__ == '__main__':
