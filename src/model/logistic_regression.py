@@ -7,6 +7,7 @@ import numpy as np
 
 from util.activation_functions import Activation
 from model.classifier import Classifier
+from  util.loss_functions import DifferentError
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     level=logging.DEBUG,
@@ -55,20 +56,29 @@ class LogisticRegression(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
-        #grad = np.zeros(self.weight.shape)
+        MyLossFunction = DifferentError()
+        grad = 0
         x = self.trainingSet.input
-
-
         t = np.array(self.trainingSet.label)
-        t[t == 0] = -1
+        #t[t == 0] = -1
+
+        dWeightsPrevious = 0
 
         for i in range(self.epochs):
             o_x = self.fire(x)
-            error = t - o_x
-            grad = np.dot(error, x)
-            grad /= grad.sum()
+            error = MyLossFunction.calculateError(t, o_x)
+
+            #update leaning rate
+            dWeightsCurrent = self.learningRate*grad
+            cosPhi = np.sum(np.dot(dWeightsCurrent,dWeightsPrevious))
+            normalization = np.sqrt(np.dot(dWeightsPrevious, dWeightsPrevious)*np.dot(dWeightsCurrent, dWeightsCurrent)) + 10e-8
+            cosPhi = cosPhi/normalization
+            const = 1
+            self.learningRate = self.learningRate*const*(cosPhi+1+1e-6)/2
+            dWeightsPrevious = self.learningRate*grad
+            grad = grad + np.dot(error, x)
             self.updateWeights(grad)
-            print('round', i+1, 'error', np.sum(error), 'weight', np.sum(self.weight))
+            #print('round', i+1, 'error', np.sum(error), 'weight', np.sum(self.weight))
 
         
     def classify(self, testInstance):
@@ -106,6 +116,7 @@ class LogisticRegression(Classifier):
 
     def updateWeights(self, grad):
         self.weight += self.learningRate * grad
+
 
     def fire(self, input):
         # Look at how we change the activation function here!!!!
