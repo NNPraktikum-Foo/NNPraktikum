@@ -33,9 +33,10 @@ class AbsoluteError(Error):
     def errorString(self):
         self.errorString = 'absolute'
 
+    @staticmethod
     def calculateError(self, target, output):
         # It is the numbers of differences between target and output
-        return abs(target - output)
+        return abs(DifferentError.calculateError(target, output))
 
 
 class DifferentError(Error):
@@ -59,9 +60,26 @@ class MeanSquaredError(Error):
     def errorString(self):
         self.errorString = 'mse'
 
-    def calculateError(self, target, output):
+    @staticmethod
+    def calculateError(target, output):
         # MSE = 1/n*sum (i=1 to n) of (target_i - output_i)^2)
-        pass
+        error = DifferentError.calculateError(target, output)
+        return np.mean(np.power(error, 2))
+
+
+class RootMeanSquaredError(Error):
+    """
+    The Loss calculated by the root of the mean of the total squares of differences between
+    target and output.
+    """
+
+    def errorString(self):
+        self.errorString = 'rmse'
+
+    @staticmethod
+    def calculateError(target, output):
+        # RMSE = sqrt(1/n*sum (i=1 to n) of (target_i - output_i)^2))
+        return np.sqrt(MeanSquaredError.calculateError(target, output))
 
 
 class SumSquaredError(Error):
@@ -72,9 +90,11 @@ class SumSquaredError(Error):
     def errorString(self):
         self.errorString = 'sse'
 
-    def calculateError(self, target, output):
+    @staticmethod
+    def calculateError( target, output):
         # SSE = 1/2*sum (i=1 to n) of (target_i - output_i)^2)
-        pass
+        error = DifferentError.calculateError(target, output)
+        return .5*np.sum(np.power(error, 2))
 
 
 class BinaryCrossEntropyError(Error):
