@@ -61,6 +61,10 @@ class LogisticRegression(Classifier):
         #Decay constants
         base = 0.96
         decay_interval = 100
+        #Stopping constants
+        min_q_error = 0.0
+        max_accuracy = 100 #not implemented yet
+        min_improvement = 1.0 #not implemented yet
 
         #Input preprocessing
         input = self.trainingSet.input
@@ -76,19 +80,20 @@ class LogisticRegression(Classifier):
         		fired = self.fire(input)
         		signed_error = label - fired
         		for i in range(size):
-        				if signed_error[i] >= 0.5:
+        				if abs(signed_error[i]) >= 0.5:
         						misses += 1
         		
         		grad = np.dot(signed_error, input)
         		self.updateWeights(grad)
         		e += 1
+        		quad_error = np.average(np.power(signed_error, 2))
         		if (e%decay_interval == 0):
         				self.decayLearningRate(base)
         		if verbose and (e%100 == 0):
-        				quad_error = np.average(np.power(signed_error, 2))
-        				accuracy = (size - inbalance*misses)*100.0/size		
-        				logging.info("Epoch: %i; Error: %f; Misses: %i, Acc: %f", e, quad_error, misses, accuracy)
-        		if e >= self.epochs:
+        				accuracy = (size - misses)*100.0/size
+        				logging.info("Epoch: %i; Error: %f; Misses: %i, Acc: %f",
+        				 e, quad_error, misses, accuracy)
+        		if e >= self.epochs or quad_error < min_q_error:
         				stopping = True
         				logging.info("Final learningRate: %f", self.learningRate)
         
