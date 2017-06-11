@@ -4,9 +4,11 @@ import sys
 import logging
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from util.activation_functions import Activation
 from util.loss_functions import DifferentError
+from util.loss_functions import RootMeanSquaredError
 from model.classifier import Classifier
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
@@ -61,19 +63,28 @@ class LogisticRegression(Classifier):
 
         t = np.array(self.trainingSet.label)
 
+        rmse_list = list()
+
         for i in range(self.epochs):
             o_x = self.fire(x)
             error = DifferentError.calculateError(t, o_x)
 
-            if np.power(error, 2).sum()/error.shape[0] < .001:
+            rmse = RootMeanSquaredError.calculateError(t, o_x)
+            rmse_list.append(rmse)
+            if rmse < .05:
                 break
 
             grad = np.dot(error, x)
             self.updateWeights(grad)
 
-            print('round', i+1, 'error', np.power(error, 2).sum()/error.shape[0])
+            print('round', i+1, 'rmse', rmse)
 
-        
+        plt.plot(rmse_list)
+        plt.xlabel('Epoch')
+        plt.ylabel('RMSE')
+        plt.title('Average RMSE')
+        plt.show()
+
     def classify(self, testInstance):
         """Classify a single instance.
 
