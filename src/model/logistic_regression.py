@@ -55,24 +55,42 @@ class LogisticRegression(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
+        #Initializations
         stopping = False
         e = 0
+        #Decay constants
+        base = 0.96
+        decay_interval = 100
+
+        #Input preprocessing
         input = self.trainingSet.input
         label = np.array(self.trainingSet.label)
+        size = input.shape[0]
+        positives = np.count_nonzero(label)
+      	#Average number of negatives for each positive
+        inbalance = float(size)/positives - 1
 
+        #Training
         while not stopping:
+        		misses = 0
         		fired = self.fire(input)
         		signed_error = label - fired
+        		for i in range(size):
+        				if signed_error[i] >= 0.5:
+        						misses += 1
+        		
         		grad = np.dot(signed_error, input)
         		self.updateWeights(grad)
         		e += 1
-        		if verbose:
+        		if (e%decay_interval == 0):
+        				self.decayLearningRate(base)
+        		if verbose and (e%100 == 0):
         				quad_error = np.average(np.power(signed_error, 2))
-        				quad_error = np.divide(np.power(signed_error, 2).sum(), signed_error.shape[0])
-        				print(signed_error[0])
-        				logging.info("Epoch: %i; Error: %i", e, quad_error)
+        				accuracy = (size - inbalance*misses)*100.0/size		
+        				logging.info("Epoch: %i; Error: %f; Misses: %i, Acc: %f", e, quad_error, misses, accuracy)
         		if e >= self.epochs:
         				stopping = True
+        				logging.info("Final learningRate: %f", self.learningRate)
         
     def classify(self, testInstance):
         """Classify a single instance.
@@ -114,3 +132,6 @@ class LogisticRegression(Classifier):
         # Look at how we change the activation function here!!!!
         # Not Activation.sign as in the perceptron, but sigmoid
         return Activation.sigmoid(np.dot(np.array(input), self.weight))
+
+    def decayLearningRate(self, base):
+    		self.learningRate *= base
