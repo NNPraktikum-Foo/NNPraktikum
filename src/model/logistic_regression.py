@@ -38,7 +38,8 @@ class LogisticRegression(Classifier):
     epochs : positive int
     """
 
-    def __init__(self, train, valid, test, learningRate=0.01, epochs=50):
+    def __init__(self, train, valid, test, learningRate=0.01, epochs=50,
+    	minRmse=0.0, base=1, decayInterval=float("Inf")):
 
         self.learningRate = learningRate
         self.epochs = epochs
@@ -46,6 +47,9 @@ class LogisticRegression(Classifier):
         self.trainingSet = train
         self.validationSet = valid
         self.testSet = test
+        self.minRmse = minRmse
+        self.base = base
+        self.decayInterval = decayInterval
 
         # Initialize the weight vector with small values
         self.weight = 0.01*np.random.randn(self.trainingSet.input.shape[1]+1)
@@ -71,11 +75,12 @@ class LogisticRegression(Classifier):
 
             rmse = RootMeanSquaredError.calculateError(t, o_x)
             rmse_list.append(rmse)
-            if rmse < .05:
+            if rmse < self.minRmse:
                 break
 
             grad = np.dot(error, x)
             self.updateWeights(grad)
+            self.decayLearningRate(i)
 
             print('round', i+1, 'rmse', rmse)
 
@@ -126,3 +131,13 @@ class LogisticRegression(Classifier):
         # Look at how we change the activation function here!!!!
         # Not Activation.sign as in the perceptron, but sigmoid
         return Activation.sigmoid(np.dot(np.array(input), self.weight))
+
+    def decayLearningRate(self, epoch):
+        """Change the learning rate.
+
+        Parameters
+        ----------
+        epoch : current epoch of the training
+        """
+        if(epoch % self.decayInterval == 0):
+            self.learningRate *= self.base

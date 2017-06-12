@@ -22,7 +22,10 @@ def main():
                                         data.validationSet,
                                         data.testSet,
                                         learningRate=0.002,
-                                        epochs=10000)
+                                        epochs=10000,
+                                        minRmse=0.05,
+                                        base=0.96,
+                                        decayInterval=1000)
     # Train the classifiers
     print("=========================")
     print("Training..")
