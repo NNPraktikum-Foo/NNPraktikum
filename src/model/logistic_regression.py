@@ -65,10 +65,12 @@ class LogisticRegression(Classifier):
         """
         x = self.trainingSet.input
         x = np.insert(x, 0, 1, axis=1)
+        size = x.shape[0]
 
         t = np.array(self.trainingSet.label)
 
         rmse_list = list()
+        acc_list = list()
 
         for i in range(self.epochs):
             o_x = self.fire(x)
@@ -76,6 +78,9 @@ class LogisticRegression(Classifier):
 
             rmse = RootMeanSquaredError.calculateError(t, o_x)
             rmse_list.append(rmse)
+            misses = np.sum(abs(error) >= 0.5)
+            trainAccuracy = (size - misses)*100.0/size
+            acc_list.append(trainAccuracy)
             if rmse < self.minRmse:
                 break
 
@@ -83,13 +88,21 @@ class LogisticRegression(Classifier):
             self.updateWeights(grad)
             self.decayLearningRate(i+1) #i+1 because we don't want to decay after the first step already
 
-            if(verbose and (i%self.loggingInterval == 0)):
-                logging.info("Epoch: %i; RMSE: %f; LearningRate: %f", i+1, rmse, self.learningRate)
+            if(verbose and ((i+1)%self.loggingInterval == 0)):
+                logging.info("Epoch: %i; RMSE: %f; TrainAccuracy: %f; LearningRate: %f",
+                             i+1, rmse, trainAccuracy, self.learningRate)
 
-        plt.plot(rmse_list)
-        plt.xlabel('Epoch')
+        plt.subplot(1,2,1)
+        plt.plot(rmse_list, label='RMSE')
         plt.ylabel('RMSE')
-        plt.title('Average RMSE')
+        plt.xlabel('Epoch')
+        plt.ylim(0.0, 0.2)
+        plt.subplot(1,2,2)
+        plt.plot(acc_list, label='Test Accuracy')
+        plt.ylabel('Test Accuracy [%]')
+        plt.xlabel('Epoch')
+        plt.ylim(95, 100)
+        plt.tight_layout()
         plt.show()
 
     def classify(self, testInstance):
