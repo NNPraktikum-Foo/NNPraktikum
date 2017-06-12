@@ -43,6 +43,7 @@ class LogisticRegression(Classifier):
 
         self.learningRate = learningRate
         self.epochs = epochs
+        self.loggingInterval = epochs // 100
 
         self.trainingSet = train
         self.validationSet = valid
@@ -80,9 +81,10 @@ class LogisticRegression(Classifier):
 
             grad = np.dot(error, x)
             self.updateWeights(grad)
-            self.decayLearningRate(i)
+            self.decayLearningRate(i+1) #i+1 because we don't want to decay after the first step already
 
-            print('round', i+1, 'rmse', rmse)
+            if(verbose and (i%self.loggingInterval == 0)):
+                logging.info("Epoch: %i; RMSE: %f; LearningRate: %f", i+1, rmse, self.learningRate)
 
         plt.plot(rmse_list)
         plt.xlabel('Epoch')
