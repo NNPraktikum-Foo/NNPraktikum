@@ -4,10 +4,11 @@ import time
 import numpy as np
 
 from util.activation_functions import Activation
-from model.layer import Layer
+from numpy import dot, matmul
+#from model.layer import Layer
 
 
-class LogisticLayer(Layer):
+class LogisticLayer():#Layer):
     """
     A layer of perceptrons acting as the output layer
 
@@ -53,10 +54,8 @@ class LogisticLayer(Layer):
         self.learningRate = learningRate
 
         # Adding bias
-        self.input = np.ndarray((nIn+1, 1))
-        self.input[0] = 1
-        self.output = np.ndarray((nOut, 1))
-        self.delta = np.zeros((nOut, 1))
+        self.output = np.ndarray(nOut)
+        self.delta = np.zeros((self.nOut, self.nIn + 1))
 
         # You can have better initialization here
         if weights is None:
@@ -85,8 +84,9 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
-        self.output = input * self.weights
-        return self.activation(self.delta)
+        input = self.addBias(input)
+        self.output = matmul(self.weights, input)
+        return Activation.softmax(self.activation(self.output))
 
     def computeDerivative(self, nextDerivatives, nextWeights):
         # TODO: Not sure why nextWeights is unused here. 
@@ -105,12 +105,22 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array containing the partial derivatives on this layer
         """
-        activationDerivative = Activation.getDerivative(self.activation_name)
-        self.delta = nextDerivatives * self.weight * activationDerivative(self.output)
-        return self.delta
+        activationDerivative = Activation.getDerivative(self.activationString)
+        nextDerivatives = self.addBias(nextDerivatives)
+        # TODO this is most likely wrong
+        delta = matmul(matmul(self.weights, nextDerivatives), activationDerivative(self.output))
+        self.delta = self.delta + delta
+        return delta
+
+    def addBias(self, _d):
+        d = np.zeros(len(_d) + 1)
+        d[0] = 1
+        d[1:len(d) + 1] = _d
+        return d
 
     def updateWeights(self):
         """
         Update the weights of the layer
         """
-        self.weights = weights + self.learningReate * self.delta
+        self.weights = self.weights + self.learningRate * self.delta
+        self.delta = np.zeros((self.nOut, self.nIn + 1))

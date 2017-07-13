@@ -23,6 +23,7 @@ def main():
     myLRClassifier = LogisticRegression(data.trainingSet,
                                         data.validationSet,
                                         data.testSet,
+                                        batchSize=64,
                                         learningRate=0.005,
                                         epochs=30)                                        
 

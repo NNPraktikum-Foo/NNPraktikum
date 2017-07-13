@@ -36,7 +36,7 @@ class LogisticRegression(Classifier):
     epochs : positive int
     """
 
-    def __init__(self, train, valid, test, batch_size = 64, learningRate=0.01, epochs=50):
+    def __init__(self, train, valid, test, batchSize = 64, learningRate=0.01, epochs=50):
 
         self.learningRate = learningRate
         self.epochs = epochs
@@ -44,8 +44,9 @@ class LogisticRegression(Classifier):
         self.trainingSet = train
         self.validationSet = valid
         self.testSet = test
+        self.batchSize = batchSize
 
-        self.model = LogisticLayer(len(self.trainingSet.input[0]), len(self.trainingSet.label[0]), isClassifierLayer = True)
+        self.model = LogisticLayer(784, 2, learningRate=self.learningRate, isClassifierLayer = True, activation="sigmoid")
         # ctor for LogisticLayer
         # def __init__(self, nIn, nOut, weights=None, learningRate=0.01,
         #          activation='softmax', isClassifierLayer=True):
@@ -64,35 +65,33 @@ class LogisticRegression(Classifier):
 
         learned = False
         iteration = 0
-        n = len(self.trainingSet)
+        n = len(self.trainingSet.label)
 
         while not learned:
             totalError = 0
-            for start in xrange(0, n ,batchSize):
-                end = min(start + batchSize, n)
-                grad = 0
-                for input, label in zip(self.trainingSet.input[start:end],
-                                        self.trainingSet.label[start:end]):
+            for start in xrange(0, n, self.batchSize):
+                end = min(start + self.batchSize, n)
+                for input, label in zip(self.trainingSet.input[start:end], self.trainingSet.label[start:end]):
                     output = self.forward(input)
+
                     # compute derived error
-                    dError = -(label - output)
+                    # 
+                    dError = (label - output)
 
                     # sum up gradient
-                    grad += self.backward(error) 
+                    dError * self.backward(input) 
 
                     # compute recognizing error
-                    predictedLabel = self.classifyFromOutput(output) # same as in classify
-                    error = loss.calculateError(label, predictedLabel)
+                    error = loss.calculateError(label, output)
                     totalError += error
-
                 self.model.updateWeights()
+
             totalError = abs(totalError)
             
             iteration += 1
 
             if verbose:
-                logging.info("Epoch: %i; Error: %i", iteration, totalError)
-
+                logging.info("Epoch: %i; Error: %f", iteration, np.asscalar(totalError))
             if totalError == 0 or iteration >= self.epochs:
                 # stop criteria is reached
                 learned = True
@@ -104,7 +103,7 @@ class LogisticRegression(Classifier):
         return self.model.computeDerivative(error, None)
 
     def classifyFromOutput(self, output):
-        return output > 0.5
+        return np.argmax(output) 
 
     def classify(self, testInstance):
         """Classify a single instance.
