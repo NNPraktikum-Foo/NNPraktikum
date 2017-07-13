@@ -40,7 +40,7 @@ class LogisticLayer(Layer):
         shape of the layer, is also shape of the weight matrix
     """
 
-    def __init__(self, nIn, nOut, weights=None,
+    def __init__(self, nIn, nOut, weights=None, learningRate=0.01,
                  activation='softmax', isClassifierLayer=True):
 
         # Get activation function from string
@@ -50,6 +50,7 @@ class LogisticLayer(Layer):
 
         self.nIn = nIn
         self.nOut = nOut
+        self.learningRate = learningRate
 
         # Adding bias
         self.input = np.ndarray((nIn+1, 1))
@@ -84,9 +85,11 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
-        pass
+        self.output = input * self.weights
+        return self.activation(self.delta)
 
     def computeDerivative(self, nextDerivatives, nextWeights):
+        # TODO: Not sure why nextWeights is unused here. 
         """
         Compute the derivatives (back)
 
@@ -102,10 +105,12 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array containing the partial derivatives on this layer
         """
-        pass
+        activationDerivative = Activation.getDerivative(self.activation_name)
+        self.delta = nextDerivatives * self.weight * activationDerivative(self.output)
+        return self.delta
 
     def updateWeights(self):
         """
         Update the weights of the layer
         """
-        pass
+        self.weights = weights + self.learningReate * self.delta
