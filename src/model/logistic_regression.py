@@ -7,11 +7,12 @@ import numpy as np
 
 from util.activation_functions import Activation
 from model.classifier import Classifier
+from model.logistic_layer import LogisticLayer
+from util.loss_functions import BinaryCrossEntropyError
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     level=logging.DEBUG,
                     stream=sys.stdout)
-
 
 class LogisticRegression(Classifier):
     """
@@ -35,7 +36,7 @@ class LogisticRegression(Classifier):
     epochs : positive int
     """
 
-    def __init__(self, train, valid, test, learningRate=0.01, epochs=50):
+    def __init__(self, train, valid, test, batchSize = 64, learningRate=0.01, epochs=50):
 
         self.learningRate = learningRate
         self.epochs = epochs
@@ -43,9 +44,13 @@ class LogisticRegression(Classifier):
         self.trainingSet = train
         self.validationSet = valid
         self.testSet = test
+        self.batchSize = batchSize
 
-        # Initialize the weight vector with small values
-        self.weight = 0.01*np.random.randn(self.trainingSet.input.shape[1])
+        self.model = LogisticLayer(784, 2, learningRate=self.learningRate, isClassifierLayer = True, activation="sigmoid")
+        # ctor for LogisticLayer
+        # def __init__(self, nIn, nOut, weights=None, learningRate=0.01,
+        #          activation='softmax', isClassifierLayer=True):
+
 
     def train(self, verbose=True):
         """Train the Logistic Regression.
@@ -56,38 +61,48 @@ class LogisticRegression(Classifier):
             Print logging messages with validation accuracy if verbose is True.
         """
 
-        from util.loss_functions import DifferentError
-        loss = DifferentError()
+        loss = BinaryCrossEntropyError()
 
         learned = False
         iteration = 0
+        n = len(self.trainingSet.label)
 
         while not learned:
-            grad = 0
             totalError = 0
-            for input, label in zip(self.trainingSet.input,
-                                    self.trainingSet.label):
-                output = self.fire(input)
-                # compute gradient
-                grad += -(label - output)*input
+            for start in range(0, n, self.batchSize):
+                end = min(start + self.batchSize, n)
+                for input, label in zip(self.trainingSet.input[start:end], self.trainingSet.label[start:end]):
+                    output = self.forward(input)
 
-                # compute recognizing error, not BCE
-                predictedLabel = self.classify(input)
-                error = loss.calculateError(label, predictedLabel)
-                totalError += error
+                    # compute derived error
+                    dError = (label - output)
 
-            self.updateWeights(grad)
+                    # backward path
+                    self.backward(input, dError)
+
+                    # compute recognizing error
+                    error = loss.calculateError(label, output)
+                    totalError += error
+                    self.model.updateWeights()
+
             totalError = abs(totalError)
             
             iteration += 1
 
             if verbose:
-                logging.info("Epoch: %i; Error: %i", iteration, totalError)
-                
-
+                logging.info("Epoch: %i; Error: %f", iteration, np.asscalar(totalError))
             if totalError == 0 or iteration >= self.epochs:
                 # stop criteria is reached
                 learned = True
+
+    def forward(self, input):
+        return self.model.forward(input)
+
+    def backward(self, input, error):
+        return self.model.computeDerivative(error=error)
+
+    def classifyFromOutput(self, output):
+        return np.argmax(output) 
 
     def classify(self, testInstance):
         """Classify a single instance.
@@ -101,7 +116,7 @@ class LogisticRegression(Classifier):
         bool :
             True if the testInstance is recognized as a 7, False otherwise.
         """
-        return self.fire(testInstance) > 0.5
+        return self.classifyFromOutput(self.forward(testInstance))
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
@@ -118,12 +133,6 @@ class LogisticRegression(Classifier):
         """
         if test is None:
             test = self.testSet.input
-        # Once you can classify an instance, just use map for all of the test
-        # set.
+
+
         return list(map(self.classify, test))
-
-    def updateWeights(self, grad):
-        self.weight -= self.learningRate*grad
-
-    def fire(self, input):
-        return Activation.sigmoid(np.dot(np.array(input), self.weight))

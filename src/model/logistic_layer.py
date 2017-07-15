@@ -4,10 +4,11 @@ import time
 import numpy as np
 
 from util.activation_functions import Activation
-from model.layer import Layer
+from numpy import dot, matmul
+#from model.layer import Layer
 
 
-class LogisticLayer(Layer):
+class LogisticLayer():#Layer):
     """
     A layer of perceptrons acting as the output layer
 
@@ -40,7 +41,7 @@ class LogisticLayer(Layer):
         shape of the layer, is also shape of the weight matrix
     """
 
-    def __init__(self, nIn, nOut, weights=None,
+    def __init__(self, nIn, nOut, weights=None, learningRate=0.01,
                  activation='softmax', isClassifierLayer=True):
 
         # Get activation function from string
@@ -50,12 +51,11 @@ class LogisticLayer(Layer):
 
         self.nIn = nIn
         self.nOut = nOut
+        self.learningRate = learningRate
 
         # Adding bias
-        self.input = np.ndarray((nIn+1, 1))
-        self.input[0] = 1
-        self.output = np.ndarray((nOut, 1))
-        self.delta = np.zeros((nOut, 1))
+        self.output = np.ndarray(nOut)
+        self.delta = np.zeros((self.nOut, self.nIn + 1))
 
         # You can have better initialization here
         if weights is None:
@@ -84,9 +84,13 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
-        pass
+        input = self.addBias(input)
+        output = matmul(self.weights, input)
+        self.output = self.activation(output)
+        return self.output
 
-    def computeDerivative(self, nextDerivatives, nextWeights):
+    def computeDerivative(self, nextDerivatives=None, nextWeights=None, error=None):
+        # TODO: Not sure why nextWeights is unused here. 
         """
         Compute the derivatives (back)
 
@@ -102,10 +106,22 @@ class LogisticLayer(Layer):
         ndarray :
             a numpy array containing the partial derivatives on this layer
         """
-        pass
+        activationDerivative = Activation.getDerivative(self.activationString)
+        if self.isClassifierLayer:
+            self.delta += matmul(error, activationDerivative(self.output))
+        else:
+            self.delta += activationDerivative(self.output) * np.sum(matmul(nextDerivatives, nextWeights))
+        return self.delta
+
+    def addBias(self, _d):
+        d = np.zeros(len(_d) + 1)
+        d[0] = 1
+        d[1:len(d) + 1] = _d
+        return d
 
     def updateWeights(self):
         """
         Update the weights of the layer
         """
-        pass
+        self.weights = self.weights + self.learningRate * self.delta
+        self.delta = np.zeros((self.nOut, self.nIn + 1))
