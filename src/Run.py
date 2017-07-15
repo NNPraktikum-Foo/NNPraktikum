@@ -25,7 +25,7 @@ def main():
                                         data.testSet,
                                         batchSize=64,
                                         learningRate=0.005,
-                                        epochs=30)                                        
+                                        epochs=200)                                        
 
     # Train the classifiers
     print("=========================")

@@ -79,7 +79,7 @@ class LogisticRegression(Classifier):
                     dError = (label - output)
 
                     # sum up gradient
-                    dError * self.backward(input) 
+                    self.backward(dError, input) 
 
                     # compute recognizing error
                     error = loss.calculateError(label, output)
@@ -99,8 +99,8 @@ class LogisticRegression(Classifier):
     def forward(self, input):
         return self.model.forward(input)
 
-    def backward(self, error):
-        return self.model.computeDerivative(error, None)
+    def backward(self, error, input):
+        return self.model.computeDerivative(error, input)
 
     def classifyFromOutput(self, output):
         return np.argmax(output) 

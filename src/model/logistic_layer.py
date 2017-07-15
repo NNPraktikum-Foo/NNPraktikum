@@ -84,11 +84,12 @@ class LogisticLayer():#Layer):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
+        self.input = input
         input = self.addBias(input)
-        self.output = matmul(self.weights, input)
-        return Activation.softmax(self.activation(self.output))
+        self.output = self.activation(matmul(self.weights, input))
+        return self.output 
 
-    def computeDerivative(self, nextDerivatives, nextWeights):
+    def computeDerivative(self, error, input):
         # TODO: Not sure why nextWeights is unused here. 
         """
         Compute the derivatives (back)
@@ -106,10 +107,13 @@ class LogisticLayer():#Layer):
             a numpy array containing the partial derivatives on this layer
         """
         activationDerivative = Activation.getDerivative(self.activationString)
-        nextDerivatives = self.addBias(nextDerivatives)
+        #nextDerivatives = self.addBias(nextDerivatives)
         # TODO this is most likely wrong
-        delta = matmul(matmul(self.weights, nextDerivatives), activationDerivative(self.output))
-        self.delta = self.delta + delta
+        # delta = np.transpose(np.outer(nextDerivatives, activationDerivative(self.output)))
+        input = self.addBias(input)
+        delta = np.outer(error, input)
+        # delta = matmul(matmul(self.weights, nextDerivatives), activationDerivative(self.output))
+        self.delta = (self.delta + delta) 
         return delta
 
     def addBias(self, _d):
@@ -122,5 +126,5 @@ class LogisticLayer():#Layer):
         """
         Update the weights of the layer
         """
-        self.weights = self.weights + self.learningRate * self.delta
+        self.weights = self.weights + self.learningRate * (self.delta / 64.0)
         self.delta = np.zeros((self.nOut, self.nIn + 1))
