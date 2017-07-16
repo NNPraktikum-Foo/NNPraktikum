@@ -69,29 +69,35 @@ class LogisticRegression(Classifier):
 
         while not learned:
             totalError = 0
+            totalMSEError = 0;
             for start in xrange(0, n, self.batchSize):
                 end = min(start + self.batchSize, n)
                 for input, label in zip(self.trainingSet.input[start:end], self.trainingSet.label[start:end]):
                     output = self.forward(input)
 
+                    target = np.zeros(2)
+                    target[label] = 1
+
                     # compute derived error
-                    # 
-                    dError = (label - output)
+                    dError = (output - target)
+
+                    totalMSEError += np.sum(abs(dError));
 
                     # sum up gradient
                     self.backward(dError, input) 
 
                     # compute recognizing error
-                    error = loss.calculateError(label, output)
-                    totalError += error
+                    error = loss.calculateError(target, output)
+                    totalError += abs(error)
                 self.model.updateWeights()
 
-            totalError = abs(totalError)
+            totalError = totalError / n
+            totalMSEError = totalMSEError / n;
             
             iteration += 1
 
             if verbose:
-                logging.info("Epoch: %i; Error: %f", iteration, np.asscalar(totalError))
+                logging.info("Epoch: %i; Error: %f, MSEError: %f", iteration, np.asscalar(totalError), np.asscalar(totalMSEError))
             if totalError == 0 or iteration >= self.epochs:
                 # stop criteria is reached
                 learned = True
@@ -118,6 +124,7 @@ class LogisticRegression(Classifier):
             True if the testInstance is recognized as a 7, False otherwise.
         """
         return self.classifyFromOutput(self.forward(testInstance))
+        #return self.forward(testInstance)
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.

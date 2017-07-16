@@ -126,5 +126,5 @@ class LogisticLayer():#Layer):
         """
         Update the weights of the layer
         """
-        self.weights = self.weights + self.learningRate * (self.delta / 64.0)
+        self.weights = self.weights - self.learningRate * (self.delta / 64.0)
         self.delta = np.zeros((self.nOut, self.nIn + 1))
