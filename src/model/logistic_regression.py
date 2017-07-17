@@ -67,7 +67,7 @@ class LogisticRegression(Classifier):
 
         while not learned:
             totalError = 0
-            totalMSEError = 0;
+            totalMSEError = 0
             for start in xrange(0, n, self.batchSize): # Use batchSize als step size for this loop
                 end = min(start + self.batchSize, n)
                 # We create our batch by slicing the input data appropiately. 
@@ -87,7 +87,7 @@ class LogisticRegression(Classifier):
                     self.backward(grad, input, output) 
 
                     # MSE Error, just for debugging
-                    totalMSEError += np.sum(abs(output - target));
+                    totalMSEError += np.sum(abs(output - target))
 
                     # compute BCE recognizing error
                     totalError += abs(loss.calculateError(target, output))
@@ -97,7 +97,7 @@ class LogisticRegression(Classifier):
 
             # Divide errors by item count, so we can read it more easily. 
             totalError = totalError / n
-            totalMSEError = totalMSEError / n;
+            totalMSEError = totalMSEError / n
             
             iteration += 1
 
