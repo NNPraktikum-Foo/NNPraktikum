@@ -78,10 +78,11 @@ class LogisticRegression(Classifier):
                     target = np.zeros(2)
                     target[label] = 1
 
-                    # compute derived error
-                    dError = (output - target)
+                    # Derivate of the logisitc regression
+                    dError = np.matmul((output - target), np.linalg.pinv(np.outer(output, (np.ones(output.shape) - output))))
 
-                    totalMSEError += np.sum(abs(dError));
+                    # MSE Error, just for debugging
+                    totalMSEError += np.sum(abs(output - target));
 
                     # sum up gradient
                     self.backward(dError, input) 
@@ -97,7 +98,7 @@ class LogisticRegression(Classifier):
             iteration += 1
 
             if verbose:
-                logging.info("Epoch: %i; Error: %f, MSEError: %f", iteration, np.asscalar(totalError), np.asscalar(totalMSEError))
+                logging.info("Epoch: %i; BCEError: %f, MSEError: %f", iteration, np.asscalar(totalError), np.asscalar(totalMSEError))
             if totalError == 0 or iteration >= self.epochs:
                 # stop criteria is reached
                 learned = True

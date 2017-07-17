@@ -111,7 +111,7 @@ class LogisticLayer():#Layer):
         # TODO this is most likely wrong
         # delta = np.transpose(np.outer(nextDerivatives, activationDerivative(self.output)))
         input = self.addBias(input)
-        delta = np.outer(error, input)
+        delta = np.outer(np.matmul(error, np.outer(self.output, np.ones(self.output.shape) - self.output)), input)
         # delta = matmul(matmul(self.weights, nextDerivatives), activationDerivative(self.output))
         self.delta = (self.delta + delta) 
         return delta
