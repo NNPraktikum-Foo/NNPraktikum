@@ -70,10 +70,10 @@ class LogisticRegression(Classifier):
             totalError = 0
             totalMSEError = 0
             
-            # Shuffle data for each iteration. 
-            data = np.random.permutation(zip(self.trainingSet.input, self.trainingSet.label))
+            # Shuffle data for each iteration.
+            data = np.random.permutation(list(zip(self.trainingSet.input, self.trainingSet.label)))
 
-            for start in xrange(0, n, self.batchSize): # Use batchSize als step size for this loop
+            for start in range(0, n, self.batchSize): # Use batchSize als step size for this loop
                 end = min(start + self.batchSize, n)
                 # We create our batch by slicing the input data appropiately. 
                 for input, label in data[start:end]:
