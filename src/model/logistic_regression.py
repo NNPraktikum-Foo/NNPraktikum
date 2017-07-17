@@ -65,13 +65,15 @@ class LogisticRegression(Classifier):
         iteration = 0
         n = len(self.trainingSet.label)
 
+        data = np.random.permutation(zip(self.trainingSet.input, self.trainingSet.label))
+
         while not learned:
             totalError = 0
             totalMSEError = 0
             for start in xrange(0, n, self.batchSize): # Use batchSize als step size for this loop
                 end = min(start + self.batchSize, n)
                 # We create our batch by slicing the input data appropiately. 
-                for input, label in np.random.permutation(zip(self.trainingSet.input[start:end], self.trainingSet.label[start:end])):
+                for input, label in data[start:end]:
 
                     # Forward pass. 
                     output = self.forward(input)
