@@ -72,7 +72,7 @@ class LogisticRegression(Classifier):
             totalMSEError = 0;
             for start in xrange(0, n, self.batchSize):
                 end = min(start + self.batchSize, n)
-                for input, label in zip(self.trainingSet.input[start:end], self.trainingSet.label[start:end]):
+                for input, label in np.random.permutation(zip(self.trainingSet.input[start:end], self.trainingSet.label[start:end])):
                     output = self.forward(input)
 
                     target = np.zeros(2)

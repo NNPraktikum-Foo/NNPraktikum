@@ -4,7 +4,7 @@
 Activation functions which can be used within neurons.
 """
 
-from numpy import divide, sum, exp
+from numpy import divide, sum, exp, outer, ones
 
 
 class Activation:
@@ -25,7 +25,7 @@ class Activation:
     def sigmoidPrime(netOutput):
         # Here you have to code the derivative of sigmoid function
         # netOutput.*(1-netOutput)
-        return netOutput * (1 - netOutput);
+        return outer(netOutput, (ones(netOutput.shape) - netOutput))
 
     @staticmethod
     def tanh(netOutput):
