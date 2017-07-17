@@ -46,10 +46,8 @@ class LogisticRegression(Classifier):
         self.testSet = test
         self.batchSize = batchSize
 
+        # Create logistic layer, we use two output neurons (onehot)
         self.model = LogisticLayer(784, 2, learningRate=self.learningRate, isClassifierLayer = True, activation="sigmoid")
-        # ctor for LogisticLayer
-        # def __init__(self, nIn, nOut, weights=None, learningRate=0.01,
-        #          activation='softmax', isClassifierLayer=True):
 
 
     def train(self, verbose=True):
@@ -70,28 +68,34 @@ class LogisticRegression(Classifier):
         while not learned:
             totalError = 0
             totalMSEError = 0;
-            for start in xrange(0, n, self.batchSize):
+            for start in xrange(0, n, self.batchSize): # Use batchSize als step size for this loop
                 end = min(start + self.batchSize, n)
+                # We create our batch by slicing the input data appropiately. 
                 for input, label in np.random.permutation(zip(self.trainingSet.input[start:end], self.trainingSet.label[start:end])):
+
+                    # Forward pass. 
                     output = self.forward(input)
 
+                    # Create onehot target from label 
                     target = np.zeros(2)
                     target[label] = 1
 
                     # Derivate of the logisitc regression
-                    dError = np.matmul((output - target), np.linalg.pinv(np.outer(output, (np.ones(output.shape) - output))))
+                    grad = np.matmul((output - target), np.linalg.pinv(np.outer(output, (np.ones(output.shape) - output))))
+
+                    # Backward pass for inner layers
+                    self.backward(grad, input, output) 
 
                     # MSE Error, just for debugging
                     totalMSEError += np.sum(abs(output - target));
 
-                    # sum up gradient
-                    self.backward(dError, input) 
+                    # compute BCE recognizing error
+                    totalError += abs(loss.calculateError(target, output))
 
-                    # compute recognizing error
-                    error = loss.calculateError(target, output)
-                    totalError += abs(error)
-                self.model.updateWeights()
+                # After a batch iteration, call update weights
+                self.model.updateWeights(self.batchSize)
 
+            # Divide errors by item count, so we can read it more easily. 
             totalError = totalError / n
             totalMSEError = totalMSEError / n;
             
@@ -104,12 +108,15 @@ class LogisticRegression(Classifier):
                 learned = True
 
     def forward(self, input):
+        # Invokes a forward pass 
         return self.model.forward(input)
 
-    def backward(self, error, input):
-        return self.model.computeDerivative(error, input)
+    def backward(self, grad, input, output):
+        # Computes the derivatie for our layer. 
+        return self.model.computeDerivative(grad, input, output)
 
     def classifyFromOutput(self, output):
+        # Converts onehot to true/false (1 or 0)
         return np.argmax(output) 
 
     def classify(self, testInstance):
@@ -125,7 +132,6 @@ class LogisticRegression(Classifier):
             True if the testInstance is recognized as a 7, False otherwise.
         """
         return self.classifyFromOutput(self.forward(testInstance))
-        #return self.forward(testInstance)
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
@@ -142,6 +148,5 @@ class LogisticRegression(Classifier):
         """
         if test is None:
             test = self.testSet.input
-
 
         return list(map(self.classify, test))

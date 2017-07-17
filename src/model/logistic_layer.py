@@ -1,14 +1,11 @@
-
 import time
 
 import numpy as np
 
 from util.activation_functions import Activation
-from numpy import dot, matmul
-#from model.layer import Layer
 
 
-class LogisticLayer():#Layer):
+class LogisticLayer():
     """
     A layer of perceptrons acting as the output layer
 
@@ -84,12 +81,13 @@ class LogisticLayer():#Layer):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
+        # Forward pass: Extend the input vector to support bias and multiply it by
+        # our weights. 
         self.input = input
         input = self.addBias(input)
-        self.output = self.activation(matmul(self.weights, input))
-        return self.output 
+        return self.activation(np.matmul(self.weights, input))
 
-    def computeDerivative(self, error, input):
+    def computeDerivative(self, grad, input, output):
         # TODO: Not sure why nextWeights is unused here. 
         """
         Compute the derivatives (back)
@@ -106,25 +104,29 @@ class LogisticLayer():#Layer):
         ndarray :
             a numpy array containing the partial derivatives on this layer
         """
+
         activationDerivative = Activation.getDerivative(self.activationString)
-        #nextDerivatives = self.addBias(nextDerivatives)
-        # TODO this is most likely wrong
-        # delta = np.transpose(np.outer(nextDerivatives, activationDerivative(self.output)))
+
         input = self.addBias(input)
-        delta = np.outer(np.matmul(error, activationDerivative(self.output)), input)
-        # delta = matmul(matmul(self.weights, nextDerivatives), activationDerivative(self.output))
-        self.delta = (self.delta + delta) 
+        
+        # Outer derivative, multiplied by derivative of activation function, multiplied by input
+        delta = np.outer(np.matmul(grad, activationDerivative(output)), input)
+        
+        # Update delta
+        self.delta += delta
         return delta
 
     def addBias(self, _d):
+        # Extend a given vector with a one at the end (neede for bias)
         d = np.zeros(len(_d) + 1)
         d[0] = 1
         d[1:len(d) + 1] = _d
         return d
 
-    def updateWeights(self):
+    def updateWeights(self, batchSize):
         """
         Update the weights of the layer
         """
-        self.weights = self.weights - self.learningRate * (self.delta / 64.0)
+        # Apply delta, normed by batchSize, then reset deltas
+        self.weights = self.weights - self.learningRate * (self.delta / batchSize)
         self.delta = np.zeros((self.nOut, self.nIn + 1))
