@@ -4,6 +4,7 @@ import sys
 import logging
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from util.activation_functions import Activation
 from model.classifier import Classifier
@@ -65,6 +66,7 @@ class LogisticRegression(Classifier):
         iteration = 0
         n = len(self.trainingSet.label)
 
+        acc_list = list()
 
         while not learned:
             totalError = 0
@@ -73,9 +75,11 @@ class LogisticRegression(Classifier):
             # Shuffle data for each iteration.
             data = np.random.permutation(list(zip(self.trainingSet.input, self.trainingSet.label)))
 
+            errorCount = 0
             for start in range(0, n, self.batchSize): # Use batchSize als step size for this loop
                 end = min(start + self.batchSize, n)
                 # We create our batch by slicing the input data appropiately. 
+
                 for input, label in data[start:end]:
 
                     # Forward pass. 
@@ -84,6 +88,9 @@ class LogisticRegression(Classifier):
                     # Create onehot target from label 
                     target = np.zeros(2)
                     target[label] = 1
+
+                    if self.classifyFromOutput(output) == self.classifyFromOutput(target):
+                        errorCount+=1
 
                     # Derivate of the logisitc regression
                     grad = np.matmul((output - target), np.linalg.pinv(np.outer(output, (np.ones(output.shape) - output))))
@@ -97,6 +104,8 @@ class LogisticRegression(Classifier):
                     # compute BCE recognizing error
                     totalError += abs(loss.calculateError(target, output))
 
+
+
                 # After a batch iteration, call update weights
                 self.model.updateWeights(self.batchSize)
 
@@ -106,11 +115,20 @@ class LogisticRegression(Classifier):
             
             iteration += 1
 
+            trainAccuracy = errorCount * 100.0 / len(data)
+            acc_list.append(trainAccuracy)
             if verbose:
                 logging.info("Epoch: %i; BCEError: %f, MSEError: %f", iteration, np.asscalar(totalError), np.asscalar(totalMSEError))
             if totalError == 0 or iteration >= self.epochs:
                 # stop criteria is reached
                 learned = True
+
+        plt.plot(acc_list, label='Test Accuracy')
+        plt.ylabel('Test Accuracy / %')
+        plt.xlabel('Epoch')
+        plt.ylim(0, 100)
+        plt.tight_layout()
+        plt.show()
 
     def forward(self, input):
         # Invokes a forward pass 
