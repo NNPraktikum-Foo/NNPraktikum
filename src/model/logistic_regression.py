@@ -47,7 +47,10 @@ class LogisticRegression(Classifier):
         self.batchSize = batchSize
 
         # Create logistic layer, we use two output neurons (onehot)
-        self.model = LogisticLayer(784, 2, learningRate=self.learningRate, isClassifierLayer = True, activation="sigmoid")
+        self.model = [
+                LogisticLayer(784, 500, learningRate=self.learningRate, isClassifierLayer = True, activation="sigmoid"),
+                LogisticLayer(500, 2, learningRate=self.learningRate, isClassifierLayer = True, activation="sigmoid")
+        ]
 
 
     def train(self, verbose=True):
@@ -84,7 +87,7 @@ class LogisticRegression(Classifier):
                     grad = np.matmul((output - target), np.linalg.pinv(np.outer(output, (np.ones(output.shape) - output))))
 
                     # Backward pass for inner layers
-                    self.backward(grad, input, output) 
+                    self.backward(grad) 
 
                     # MSE Error, just for debugging
                     totalMSEError += np.sum(abs(output - target));
@@ -93,7 +96,7 @@ class LogisticRegression(Classifier):
                     totalError += abs(loss.calculateError(target, output))
 
                 # After a batch iteration, call update weights
-                self.model.updateWeights(self.batchSize)
+                self.updateWeights(self.batchSize)
 
             # Divide errors by item count, so we can read it more easily. 
             totalError = totalError / n
@@ -109,11 +112,23 @@ class LogisticRegression(Classifier):
 
     def forward(self, input):
         # Invokes a forward pass 
-        return self.model.forward(input)
+        param = input
 
-    def backward(self, grad, input, output):
+        for model in self.model:
+            param = model.forward(param)
+
+        return param 
+
+    def updateWeights(self, batchSize):
+        for model in self.model:
+            model.updateWeights(self.batchSize)
+
+    def backward(self, grad):
         # Computes the derivatie for our layer. 
-        return self.model.computeDerivative(grad, input, output)
+        for model in reversed(self.model):
+            grad = model.computeDerivative(grad)
+
+        return grad
 
     def classifyFromOutput(self, output):
         # Converts onehot to true/false (1 or 0)

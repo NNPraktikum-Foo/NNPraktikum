@@ -83,11 +83,12 @@ class LogisticLayer():
         """
         # Forward pass: Extend the input vector to support bias and multiply it by
         # our weights. 
-        self.input = input
         input = self.addBias(input)
-        return self.activation(np.matmul(self.weights, input))
+        self.input = input
+        self.output = self.activation(np.matmul(self.weights, input))
+        return self.output
 
-    def computeDerivative(self, grad, input, output):
+    def computeDerivative(self, grad):
         # TODO: Not sure why nextWeights is unused here. 
         """
         Compute the derivatives (back)
@@ -107,14 +108,16 @@ class LogisticLayer():
 
         activationDerivative = Activation.getDerivative(self.activationString)
 
-        input = self.addBias(input)
-        
         # Outer derivative, multiplied by derivative of activation function, multiplied by input
-        delta = np.outer(np.matmul(grad, activationDerivative(output)), input)
+        # Derivative is by weight
+        delta = np.outer(np.matmul(grad, activationDerivative(self.output)), self.input)
         
         # Update delta
         self.delta += delta
-        return delta
+
+        # Same as above, but this time derive by input
+        deltaInput = np.matmul(np.matmul(grad, activationDerivative(self.output)), self.weights)
+        return deltaInput[0:self.nIn] # don't forget to truncate 
 
     def addBias(self, _d):
         # Extend a given vector with a one at the end (neede for bias)
