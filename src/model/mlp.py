@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from util.loss_functions import CrossEntropyError
+from util.loss_functions import *
 from model.logistic_layer import LogisticLayer
 from model.classifier import Classifier
 
@@ -43,12 +43,14 @@ class MultilayerPerceptron(Classifier):
         self.epochs = epochs
         self.outputTask = outputTask  # Either classification or regression
         self.outputActivation = outputActivation
-        self.cost = cost
+        #self.cost = cost
 
         self.trainingSet = train
         self.validationSet = valid
         self.testSet = test
-        
+
+        self.output = None
+
         if loss == 'bce':
             self.loss = BinaryCrossEntropyError()
         elif loss == 'sse':
@@ -74,13 +76,11 @@ class MultilayerPerceptron(Classifier):
 
         # Input layer
         inputActivation = "sigmoid"
-        self.layers.append(LogisticLayer(train.input.shape[1], 128, 
-                           None, inputActivation, False))
+        self.layers.append(LogisticLayer(train.input.shape[1], 128, None, inputActivation, False))
 
         # Output layer
         outputActivation = "softmax"
-        self.layers.append(LogisticLayer(128, 10, 
-                           None, outputActivation, True))
+        self.layers.append(LogisticLayer(128, 10, None, outputActivation, True))
 
         self.inputWeights = inputWeights
 
@@ -113,6 +113,11 @@ class MultilayerPerceptron(Classifier):
         # Here you have to propagate forward through the layers
         # And remember the activation values of each layer
         """
+        outp = inp
+        for layer in self.layers:
+            outp = layer.forward(outp)
+            outp = np.insert(outp, 0, 1)
+        self.output = outp[1:]
         
     def _compute_error(self, target):
         """
@@ -123,7 +128,7 @@ class MultilayerPerceptron(Classifier):
         ndarray :
             a numpy array (1,nOut) containing the output of the layer
         """
-        pass
+        return self.loss.calculateError(target, self.output)
     
     def _update_weights(self, learningRate):
         """
@@ -139,16 +144,43 @@ class MultilayerPerceptron(Classifier):
         verbose : boolean
             Print logging messages with validation accuracy if verbose is True.
         """
-        pass
 
+        # Run the training "epochs" times, print out the logs
+        for epoch in range(self.epochs):
+            if verbose:
+                print("Training epoch {0}/{1}.."
+                      .format(epoch + 1, self.epochs))
 
+            self._train_one_epoch()
+
+            if verbose:
+                accuracy = accuracy_score(self.validationSet.label, self.evaluate(self.validationSet))
+                # Record the performance of each epoch for later usages
+                # e.g. plotting, reporting..
+                self.performances.append(accuracy)
+                print("Accuracy on validation: {0:.2f}%"
+                      .format(accuracy * 100))
+                print("-----------------------------")
+
+    def _train_one_epoch(self):
+        """
+        Train one epoch, seeing all input instances
+        """
+        for img, label in zip(self.trainingSet.input, self.trainingSet.label):
+            self._feed_forward(img)
+            deltas = None
+            for i, layer in enumerate(reversed(self.layers)):
+                if i == 0:
+                    deltas = layer.computeDerivative(self.loss.calculateDerivative(label, self.output), 1.0)
+                else:
+                    deltas = layer.computeDerivative(self.loss.calculateDerivative(label, self.output), deltas)
+                layer.updateWeights(self.learningRate)
 
     def classify(self, test_instance):
         # Classify an instance given the model of the classifier
         # You need to implement something here
-        pass
+        return np.argmax(self._feed_forward(test_instance))
         
-
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
 
@@ -171,6 +203,5 @@ class MultilayerPerceptron(Classifier):
     def __del__(self):
         # Remove the bias from input data
         self.trainingSet.input = np.delete(self.trainingSet.input, 0, axis=1)
-        self.validationSet.input = np.delete(self.validationSet.input, 0,
-                                              axis=1)
+        self.validationSet.input = np.delete(self.validationSet.input, 0, axis=1)
         self.testSet.input = np.delete(self.testSet.input, 0, axis=1)
