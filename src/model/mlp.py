@@ -168,13 +168,17 @@ class MultilayerPerceptron(Classifier):
         """
         for img, label in zip(self.trainingSet.input, self.trainingSet.label):
             self._feed_forward(img)
-            deltas = None
+            backprop_input = np.zeros(10)
+            backprop_input[label] = 1
+            deltas = self.loss.calculateDerivative(backprop_input, self.output)
+            weights = 1
+
             for i, layer in enumerate(reversed(self.layers)):
-                if i == 0:
-                    deltas = layer.computeDerivative(self.loss.calculateDerivative(label, self.output), 1.0)
-                else:
-                    deltas = layer.computeDerivative(self.loss.calculateDerivative(label, self.output), deltas)
+                deltas = layer.computeDerivative(deltas, weights)
+                # Omit the weight of the bias unit
+                weights = layer.weights[1:,:].T
                 layer.updateWeights(self.learningRate)
+
 
     def classify(self, test_instance):
         # Classify an instance given the model of the classifier
