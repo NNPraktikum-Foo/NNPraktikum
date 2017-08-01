@@ -118,6 +118,7 @@ class MultilayerPerceptron(Classifier):
             outp = layer.forward(outp)
             outp = np.insert(outp, 0, 1)
         self.output = outp[1:]
+        return self.output
         
     def _compute_error(self, target):
         """
