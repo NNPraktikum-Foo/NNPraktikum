@@ -84,8 +84,8 @@ def main():
     mlpPred = myMLPClassifier.evaluate()
     evaluator.printAccuracy(data.testSet, mlpPred)
 
-    # plot = PerformancePlot("Logistic Regression validation")
-    # plot.draw_performance_epoch(myMLPClassifier.performances, myMLPClassifier.epochs)
+    plot = PerformancePlot("Logistic Regression validation")
+    plot.draw_performance_epoch(myMLPClassifier.performances, myMLPClassifier.epochs)
 
 
     
